@@ -1,6 +1,8 @@
 return {
   "folke/snacks.nvim",
   ---@type snacks.Config
+  --- TODO : test
+  ---
   opts = {
     animate = {
       -- your animate configuration comes here
