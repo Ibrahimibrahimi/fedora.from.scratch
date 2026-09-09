@@ -1,0 +1,22 @@
+[FILES]
+copied /home/eldorado/opencode.py to .;
+	copied /home/eldorado/disable_compositor.sh to .;
+	copied /home/eldorado/.p10k.zsh to .;
+	copied /home/eldorado/.shell.pre-oh-my-zsh to .;
+	copied /home/eldorado/.zsh_history to .;
+	copied /home/eldorado/.zshenv to .;
+	copied /home/eldorado/.zshrc to .;
+	[FOLDERS]
+copied /home/eldorado/tools to .;
+	copied /home/eldorado/.oh-my-zsh to .;
+	copied /home/eldorado/powerlevel10k to .;
+	copied /home/eldorado/.themes to .;
+	copied /home/eldorado/.icons to .;
+	copied /home/eldorado/Pictures/wallpapers to .;
+	copied /home/eldorado/.local/share/nvim/ to .;
+	copied /home/eldorado/.config/nvim/ to .;
+	copied /home/eldorado/Desktop/assets to .;
+	copied /home/eldorado/Desktop/Docs & Supports to .;
+	copied /home/eldorado/Desktop/self hosted/LMPS/mine to .;
+	copied /home/eldorado/Desktop/self.dev to .;
+	

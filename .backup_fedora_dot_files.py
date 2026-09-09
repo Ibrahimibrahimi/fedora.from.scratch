@@ -68,7 +68,7 @@ for file in important_files :
     os.system(f"git add -A && git commit -m 'added file {file}' && git push")
     
     # add to log
-    log += f"copied {file} to .;" + "\n\t"
+    log += f"copied {file} to {BACKUP_FOLDER_REPO}/;" + "\n\t"
 
 log += "[FOLDERS]\n"
 
@@ -82,8 +82,8 @@ for folder in important_folders :
     os.system(f"git add -A && git commit -m 'added file {file}' && git push")
     
     # add to log
-    log += f"copied {folder} to .;" + "\n\t"
+    log += f"copied {folder} to {BACKUP_FOLDER_REPO}/;" + "\n\t"
 
 # save log
-with open("log.txt","w") as f :
+with open(os.path.join(BACKUP_FOLDER_REPO, "log.txt"),"w") as f :
     f.write(log)
