@@ -8,7 +8,8 @@ def extract_name_from_path(fullpath:str):
     if "/" in fullpath :
         return fullpath.split("/")[-1]
 
-BACKUP_FOLDER_REPO = "/home/eldorado/.fedora.bkp"
+BACKUP_FOLDER_REPO = "backup"
+
 important_files = [
     "/home/eldorado/opencode.py",# cli agent
     "/home/eldorado/disable_compositor.sh", # in case of fresh install, run this
@@ -61,7 +62,10 @@ for file in important_files :
     file = os.path.expanduser(file)
     
     # copy the file
-    os.system(f"cp -v {file} .")
+    os.system(f"cp -v {file} {BACKUP_FOLDER_REPO}")
+
+    # commit & push after each file (to prevent large files upload)
+    os.system(f"git add -A && git commit -m 'added file {file}' && git push")
     
     # add to log
     log += f"copied {file} to .;" + "\n\t"
@@ -72,7 +76,10 @@ for folder in important_folders :
     folder = os.path.expanduser(folder)
     
     # copy the folder recursively
-    os.system(f"cp -vr {folder} .")
+    os.system(f"cp -vr {folder} {BACKUP_FOLDER_REPO}/")
+
+    # commit & push
+    os.system(f"git add -A && git commit -m 'added file {file}' && git push")
     
     # add to log
     log += f"copied {folder} to .;" + "\n\t"
