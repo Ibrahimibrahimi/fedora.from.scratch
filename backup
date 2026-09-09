@@ -1,2 +1,137 @@
-# uv
-export PATH="/home/eldorado/.local/bin:$PATH"
+# Powerlevel10k instant prompt
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+
+# Output file of TIFU
+TIFU_LOG_FILE="${TIFU_LOG_DIR}/critical_operations_i_did.md" # full path to the log file
+TIFU_LOG_DIR="~/idwahman"          # directory that holds the log
+
+source $ZSH/oh-my-zsh.sh
+
+# Catppuccin Mocha syntax highlighting
+ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#f38ba8'
+ZSH_HIGHLIGHT_STYLES[command]='fg=#a6e3a1'
+ZSH_HIGHLIGHT_STYLES[builtin]='fg=#89b4fa'
+ZSH_HIGHLIGHT_STYLES[alias]='fg=#cba6f7'
+ZSH_HIGHLIGHT_STYLES[function]='fg=#cba6f7'
+ZSH_HIGHLIGHT_STYLES[path]='fg=#cdd6f4'
+ZSH_HIGHLIGHT_STYLES[string]='fg=#a6e3a1'
+ZSH_HIGHLIGHT_STYLES[globbing]='fg=#fab387'
+ZSH_HIGHLIGHT_STYLES[history-expansion]='fg=#f9e2af'
+ZSH_HIGHLIGHT_STYLES[single-quoted-argument]='fg=#a6e3a1'
+ZSH_HIGHLIGHT_STYLES[double-quoted-argument]='fg=#a6e3a1'
+ZSH_HIGHLIGHT_STYLES[dollar-quoted-argument]='fg=#a6e3a1'
+ZSH_HIGHLIGHT_STYLES[back-quoted-argument]='fg=#a6e3a1'
+ZSH_HIGHLIGHT_STYLES[commandseparator]='fg=#cba6f7'
+ZSH_HIGHLIGHT_STYLES[redirection]='fg=#fab387'
+ZSH_HIGHLIGHT_STYLES[arg0]='fg=#a6e3a1'
+
+# Autosuggestion color
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6c7086'
+
+# Useful aliases
+alias ls='eza --icons --group-directories-first'
+alias ll='eza --icons -lah --group-directories-first'
+alias la='eza --icons -a --group-directories-first'
+alias lt='eza --icons --tree --group-directories-first'
+alias grep='grep --color=auto'
+alias c='clear'
+alias q='exit'
+alias reload='source ~/.zshrc'
+
+# simple & short
+alias xzunzip="tar -xf"
+
+# easy zsh edit
+alias zvim="vim ~/.zshrc"
+alias zload="source ~/.zshrc"
+
+
+
+# eza
+alias lsls="eza --icons"
+alias sortls="eza --icons -als modified"
+
+# Quick navigation
+alias pics="cd ~/Pictures"
+alias dsk="cd ~/Desktop"
+alias desk="cd ~/Desktop"
+alias downs="cd ~/Downloads"
+alias docs="cd ~/Documents"
+alias msq="cd ~/Music"
+
+
+# Manage todo easly
+alias todo="echo $1>> ~/idwahman/all.todo"
+alias todos="cat ~/idwahman/all.todo"
+alias logme="cat ~/idwahman/critical_operations_i_did.md"
+
+# My history of xfce : tifu => Today I (did something) Up
+# TODO : NOTICE this is a function that acts like the 'alias'
+# ---------- tifu: quick timestamped operation logger ----------
+# Usage: tifu "im about to install a package X"
+# Appends a timestamped line to $TIFU_LOG_FILE
+
+# syntax coloring
+alias ccat="bat"
+
+tifu() {
+    # Require at least one argument (the message)
+    if [[ $# -eq 0 ]]; then
+        echo "tifu: missing message" >&2
+        echo "Usage: tifu \"your message here\"" >&2
+        return 1
+    fi
+
+    # Join all args into a single message, in case it wasn't quoted
+    local message="$*"
+
+    # Make sure the log directory exists (no-op if it already does)
+    mkdir -p "$TIFU_LOG_DIR"
+
+    # Current timestamp
+    local timestamp
+    timestamp="$(date "+%Y-%m-%d %H:%M:%S")"
+
+    # Append the entry to the log file
+    echo "[$timestamp] $message" >> "$TIFU_LOG_FILE"
+
+    # Confirm to the user
+    echo "Logged to $TIFU_LOG_FILE:"
+    echo "[$timestamp] $message"
+}
+# ----------- END tifu
+
+# Easy grep
+alias grepcat="cat $1 | grep '$2'"
+
+
+# cli opencode
+alias opencode="source ~/UserDirs/super_venv_do_not_delete/bin/activate  && python ~/opencode.py"
+
+
+alias pip="python -m pip"
+
+# TODO: fast install
+alias dinst="sudo dnf install "
+
+
+# alias rrm="alias $1 -rf"
+alias pyinit="touch __init__.py"
+
+# NOTE : i commented this [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh]]
+
+# NOTE: using yt_dlp & python for playlist download
+alias down_playlist="python /home/eldorado/tools/download_full_playlist.py"
+# TODO: make a 'download video' to download single video
+#
+
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
