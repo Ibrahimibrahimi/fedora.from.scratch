@@ -53,8 +53,8 @@ def safe_commit(label: str):
 def copy_and_commit(src: str, label: str):
     """Copy a file or folder into backup/, then git add & commit."""
     src = os.path.expanduser(src)
-    dest = os.path.join(BACKUP_DIR, extract_name_from_path(src))
-
+    # dest = os.path.join(BACKUP_DIR, extract_name_from_path(src))
+    dest = "."
     if os.path.isdir(src):
         subprocess.run(["cp", "-r", src, dest])
     elif os.path.isfile(src):
