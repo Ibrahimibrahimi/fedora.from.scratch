@@ -1,1 +1,2 @@
-/bin/bash
+# uv
+export PATH="/home/eldorado/.local/bin:$PATH"
