@@ -1,89 +1,124 @@
 import subprocess
 import os
+import shlex
 
-def output(command:str):
-    return subprocess.run(command.split(" "),capture_output=True).stdout
+BACKUP_DIR = "backup"  # subfolder inside current repo
 
-def extract_name_from_path(fullpath:str):
-    if "/" in fullpath :
-        return fullpath.split("/")[-1]
+def run(cmd: list[str]) -> str:
+    return subprocess.run(cmd, capture_output=True, text=True).stdout.strip()
 
-BACKUP_FOLDER_REPO = "backup"
+def output(command: str) -> bytes:
+    return subprocess.run(shlex.split(command), capture_output=True).stdout
+
+def extract_name_from_path(fullpath: str) -> str:
+    return fullpath.split("/")[-1]
+
+def ensure_backup_dir():
+    """Create the backup/ folder if it doesn't exist."""
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    print(f"[+] Backup folder ready: {BACKUP_DIR}/")
+
+def remove_git_artifacts_from_backup():
+    """
+    Search for all .git/ dirs and .gitignore files INSIDE the backup/ folder
+    and remove them. The .git/ at '.' (the repo root) is never touched.
+    """
+    print("\n[~] Scanning for .git/ and .gitignore inside backup/ ...")
+
+    # Find .gitignore files inside backup/
+    gitignore_files = run(["find", BACKUP_DIR, "-name", ".gitignore"]).splitlines()
+    for path in gitignore_files:
+        if path:
+            print(f"  Removing .gitignore: {path}")
+            os.remove(path)
+
+    # Find .git/ directories inside backup/
+    git_dirs = run(["find", BACKUP_DIR, "-name", ".git", "-type", "d"]).splitlines()
+    for path in git_dirs:
+        if path:
+            print(f"  Removing .git/: {path}")
+            subprocess.run(["rm", "-rf", path])
+
+    print("[+] Git artifacts cleaned from backup/")
+
+def safe_commit(label: str):
+    """Commit only if there are staged changes."""
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
+        capture_output=True
+    )
+    if result.returncode != 0:  # non-zero = there are staged changes
+        subprocess.run(["git", "commit", "-m", f"backup: added {label}"])
+
+def copy_and_commit(src: str, label: str):
+    """Copy a file or folder into backup/, then git add & commit."""
+    src = os.path.expanduser(src)
+    dest = os.path.join(BACKUP_DIR, extract_name_from_path(src))
+
+    if os.path.isdir(src):
+        subprocess.run(["cp", "-r", src, dest])
+    elif os.path.isfile(src):
+        subprocess.run(["cp", src, dest])
+    else:
+        print(f"  [!] Skipped (not found): {src}")
+        return
+
+    subprocess.run(["git", "add", "-A"])
+    safe_commit(f"{label}: {src}")
+    print(f"  [✓] {src}")
+
+
+# ── Main ──────────────────────────────────────────────────────────────────────
 
 important_files = [
-    "/home/eldorado/opencode.py",# cli agent
-    "/home/eldorado/disable_compositor.sh", # in case of fresh install, run this
-    # shell 
+    "/home/eldorado/opencode.py",
+    "/home/eldorado/disable_compositor.sh",
     "/home/eldorado/.p10k.zsh",
     "/home/eldorado/.shell.pre-oh-my-zsh",
     "/home/eldorado/.zsh_history",
     "/home/eldorado/.zshenv",
     "/home/eldorado/.zshrc",
 ]
+
 important_folders = [
-    "/home/eldorado/tools", # contains all tools that zsh aliases uses
-    # shell
+    "/home/eldorado/tools",
     "/home/eldorado/.oh-my-zsh",
-    "/home/eldorado/powerlevel10k", # zsh theme
-    # themes & icons
+    "/home/eldorado/powerlevel10k",
     "/home/eldorado/.themes",
     "/home/eldorado/.icons",
-    "/home/eldorado/Pictures/wallpapers", # wallpapers
-    
-    # nvim 
-    "~/.local/share/nvim/", # plugins
+    "/home/eldorado/Pictures/wallpapers",
+    "~/.local/share/nvim/",
     "/home/eldorado/.config/nvim/",
-    
-    # some useful to save
     "/home/eldorado/Desktop/assets",
     "/home/eldorado/Desktop/Docs & Supports",
     "/home/eldorado/Desktop/self hosted/LMPS/mine",
     "/home/eldorado/Desktop/self.dev",
 ]
 
+ensure_backup_dir()
 
+print("\n[FILES]")
+for f in important_files:
+    copy_and_commit(f, "file")
 
-important_tosave_text = "; ".join(
-    [
-        str(output("tree ~/Desktop")),
-        str(output("ls ~/"))
-    ]
-)
+print("\n[FOLDERS]")
+for folder in important_folders:
+    copy_and_commit(folder, "folder")
 
-# NOTE !!!!!!!!!!!!!!!
-# the folder ~/Desktop/.fedora.bkp should exists
-# this script runs from the repo backup : .fedora.bkp
+# Clean AFTER copying so we don't accidentally nuke the repo's own .git/
+remove_git_artifacts_from_backup()
 
-# loop over all files / folders and copy them to the backup folder repo
+# Save a snapshot log
+important_tosave_text = "\n".join([
+    str(output("tree ~/Desktop")),
+    str(output("ls ~/"))
+])
 
-log = "[FILES]\n"
+log_path = os.path.join(BACKUP_DIR, "log.txt")
+with open(log_path, "w") as f:
+    f.write(important_tosave_text)
 
-for file in important_files :
-    file = os.path.expanduser(file)
-    
-    # copy the file
-    os.system(f"cp -v {file} {BACKUP_FOLDER_REPO}")
+subprocess.run(["git", "add", "-A"])
+safe_commit("log.txt snapshot")
 
-    # commit & push after each file (to prevent large files upload)
-    os.system(f"git add -A && git commit -m 'added file {file}' && git push")
-    
-    # add to log
-    log += f"copied {file} to {BACKUP_FOLDER_REPO}/;" + "\n\t"
-
-log += "[FOLDERS]\n"
-
-for folder in important_folders :
-    folder = os.path.expanduser(folder)
-    
-    # copy the folder recursively
-    os.system(f"cp -vr {folder} {BACKUP_FOLDER_REPO}/")
-
-    # commit & push
-    os.system(f"git add -A && git commit -m 'added file {file}' && git push")
-    
-    # add to log
-    log += f"copied {folder} to {BACKUP_FOLDER_REPO}/;" + "\n\t"
-
-# save log
-with open(os.path.join(BACKUP_FOLDER_REPO, "log.txt"),"w") as f :
-    f.write(log)
+print("\n[✓] Backup complete.")
